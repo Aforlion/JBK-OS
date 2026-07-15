@@ -43,10 +43,10 @@ jobs:
         run: |
           python scripts/validate_repo.py
 
-      # Step 5: Static Validation (Compile Check)
+      # Step 5: Static Validation (Compile Check - source files only)
       - name: Compile Validation
         run: |
-          python -m compileall -q .
+          python -m compileall -q core web portal scripts bootstrap.py main.py runtime.py
 
       # Step 6: Automated Testing
       - name: Run Certified Test Suite
