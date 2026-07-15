@@ -1,17 +1,14 @@
 # ============================================================
-# iam.tf — JBK-OS Infrastructure
+# foundation/iam.tf — JBK-OS Infrastructure
 # Least-privilege service accounts and IAM bindings.
 #
 # Roles defined:
 #   1. jbk-os-runtime     — Cloud Run container identity
 #   2. github-actions      — CI/CD pipeline identity (WIF, keyless)
-#   3. (future) jbk-developer — Developer access (read + invoke)
-#   4. (future) jbk-auditor   — Read-only audit access
 # ============================================================
 
-# ── 1. Cloud Run Runtime Service Account ────────────────────
+# ── 1. Cloud Run Runtime Service Account ─────────────────────
 # Minimal identity used by the JBK-OS container at runtime.
-# Receives only the permissions the application needs to operate.
 
 resource "google_service_account" "runtime" {
   project      = var.project_id
@@ -48,7 +45,7 @@ resource "google_project_iam_member" "runtime_error_writer" {
   member  = "serviceAccount:${google_service_account.runtime.email}"
 }
 
-# ── 2. GitHub Actions CI/CD Service Account ─────────────────
+# ── 2. GitHub Actions CI/CD Service Account ──────────────────
 # Used exclusively by the GitHub Actions deployment workflow.
 # Authenticates via Workload Identity Federation — NO stored keys.
 
@@ -80,9 +77,8 @@ resource "google_service_account_iam_member" "cicd_act_as_runtime" {
   member             = "serviceAccount:${google_service_account.github_actions.email}"
 }
 
-# ── 3. Workload Identity Federation Pool ────────────────────
+# ── 3. Workload Identity Federation Pool ─────────────────────
 # Allows GitHub Actions to authenticate to GCP without stored keys.
-# This is the secure, recommended authentication pattern.
 
 resource "google_iam_workload_identity_pool" "github" {
   project                   = var.project_id

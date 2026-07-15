@@ -1,6 +1,10 @@
 # ============================================================
-# main.tf — JBK-OS Infrastructure
-# GCP Provider, Project, and API enablement.
+# foundation/main.tf — JBK-OS Infrastructure
+# GCP Provider, Project, API enablement, and Artifact Registry.
+#
+# LIFECYCLE: This module runs once, or when infrastructure
+# changes (new APIs, registry config). It is NOT re-applied
+# on every application deployment.
 # ============================================================
 
 terraform {
@@ -19,27 +23,28 @@ terraform {
   #
   # backend "gcs" {
   #   bucket = "jbk-os-terraform-state"
-  #   prefix = "production"
+  #   prefix = "foundation"
   # }
 }
 
-# ── Provider ────────────────────────────────────────────────
+# ── Provider ─────────────────────────────────────────────────
 
 provider "google" {
   project = var.project_id
   region  = var.region
 }
 
-# ── Project ─────────────────────────────────────────────────
-# Creates the GCP project. Skip this resource if the project
-# already exists and set project_id to the existing ID.
+# ── Project ──────────────────────────────────────────────────
+# Creates the GCP project only when org_id is provided.
+# Personal Google accounts must create the project manually
+# in the GCP Console, then pass the existing project_id.
 
 resource "google_project" "jbk_os" {
   count = var.org_id != "" ? 1 : 0
 
   name            = var.project_name
   project_id      = var.project_id
-  org_id          = var.org_id != "" ? var.org_id : null
+  org_id          = var.org_id
   billing_account = var.billing_account
 
   labels = {
@@ -50,21 +55,20 @@ resource "google_project" "jbk_os" {
   }
 }
 
-# ── API Enablement ──────────────────────────────────────────
+# ── API Enablement ───────────────────────────────────────────
 # Explicitly enable only the APIs that JBK-OS requires.
-# Avoid enabling unnecessary services.
 
 locals {
   required_apis = [
-    "run.googleapis.com",               # Cloud Run
-    "artifactregistry.googleapis.com",  # Container image storage
-    "secretmanager.googleapis.com",     # Secret management
-    "iam.googleapis.com",               # Identity & Access Management
-    "iamcredentials.googleapis.com",    # Workload Identity Federation
-    "cloudresourcemanager.googleapis.com", # Project management
-    "logging.googleapis.com",           # Cloud Logging
-    "monitoring.googleapis.com",        # Cloud Monitoring
-    "clouderrorreporting.googleapis.com", # Error Reporting
+    "run.googleapis.com",                    # Cloud Run
+    "artifactregistry.googleapis.com",       # Container image storage
+    "secretmanager.googleapis.com",          # Secret management
+    "iam.googleapis.com",                    # Identity & Access Management
+    "iamcredentials.googleapis.com",         # Workload Identity Federation
+    "cloudresourcemanager.googleapis.com",   # Project management
+    "logging.googleapis.com",               # Cloud Logging
+    "monitoring.googleapis.com",            # Cloud Monitoring
+    "clouderrorreporting.googleapis.com",    # Error Reporting
   ]
 }
 
@@ -77,7 +81,7 @@ resource "google_project_service" "apis" {
   disable_on_destroy         = false
 }
 
-# ── Artifact Registry ───────────────────────────────────────
+# ── Artifact Registry ────────────────────────────────────────
 # Docker image repository for JBK-OS container images.
 
 resource "google_artifact_registry_repository" "jbk_os" {

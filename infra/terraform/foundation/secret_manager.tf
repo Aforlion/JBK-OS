@@ -1,5 +1,5 @@
 # ============================================================
-# secret_manager.tf — JBK-OS Infrastructure
+# foundation/secret_manager.tf — JBK-OS Infrastructure
 # Secret declarations only. Operators populate secret values
 # using `gcloud secrets versions add` — never Terraform.
 #
@@ -30,8 +30,7 @@ resource "google_secret_manager_secret" "app_secret_key" {
 }
 
 # ── Gemini API Key ───────────────────────────────────────────
-# Reserved for future Gemini integration (OL-0005 or later).
-# Declared now to establish the naming standard and IAM path.
+# Declared to establish naming standard and IAM path (OL-0005).
 
 resource "google_secret_manager_secret" "gemini_api_key" {
   depends_on = [google_project_service.apis]

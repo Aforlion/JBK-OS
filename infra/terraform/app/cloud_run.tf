@@ -1,6 +1,10 @@
 # ============================================================
-# cloud_run.tf — JBK-OS Infrastructure
-# Cloud Run service definition for the JBK-OS production runtime.
+# app/cloud_run.tf — JBK-OS Application Infrastructure
+# Cloud Run service definition.
+#
+# The runtime service account and secret are resolved from
+# foundation/ via data sources declared in main.tf —
+# no direct resource references across module boundaries.
 # ============================================================
 
 locals {
@@ -8,11 +12,6 @@ locals {
 }
 
 resource "google_cloud_run_v2_service" "jbk_os" {
-  depends_on = [
-    google_project_service.apis,
-    google_service_account.runtime,
-  ]
-
   project  = var.project_id
   name     = var.service_name
   location = var.region
@@ -25,19 +24,20 @@ resource "google_cloud_run_v2_service" "jbk_os" {
   }
 
   template {
-    # ── Identity ────────────────────────────────────────────
-    service_account = google_service_account.runtime.email
+    # ── Identity ──────────────────────────────────────────
+    # Resolved from foundation/ via data source in main.tf.
+    service_account = data.google_service_account.runtime.email
 
-    # ── Scaling ─────────────────────────────────────────────
+    # ── Scaling ───────────────────────────────────────────
     scaling {
       min_instance_count = var.min_instances
       max_instance_count = var.max_instances
     }
 
-    # ── Timeout ─────────────────────────────────────────────
+    # ── Timeout ───────────────────────────────────────────
     timeout = "${var.request_timeout_seconds}s"
 
-    # ── Labels ──────────────────────────────────────────────
+    # ── Labels ────────────────────────────────────────────
     labels = {
       product     = "jbk-os"
       environment = "production"
@@ -46,30 +46,28 @@ resource "google_cloud_run_v2_service" "jbk_os" {
     }
 
     containers {
-      # ── Image ─────────────────────────────────────────────
+      # ── Image ─────────────────────────────────────────
       image = local.image_uri
       name  = var.service_name
 
-      # ── Resources ─────────────────────────────────────────
+      # ── Resources ─────────────────────────────────────
       resources {
         limits = {
           cpu    = var.cpu_limit
           memory = var.memory_limit
         }
-        # CPU is allocated only during request processing (cost-efficient)
+        # CPU allocated only during request processing (cost-efficient)
         cpu_idle = false
       }
 
-      # ── Port ──────────────────────────────────────────────
+      # ── Port ──────────────────────────────────────────
       ports {
         name           = "http1"
         container_port = var.container_port
       }
 
-      # ── Environment Variables ──────────────────────────────
+      # ── Environment Variables ──────────────────────────
       # Non-sensitive configuration only.
-      # Sensitive values are injected via Secret Manager references below.
-
       env {
         name  = "JBK_ENVIRONMENT"
         value = var.app_environment
@@ -85,21 +83,21 @@ resource "google_cloud_run_v2_service" "jbk_os" {
         value = tostring(var.container_port)
       }
 
-      # ── Secret References ─────────────────────────────────
+      # ── Secret References ─────────────────────────────
       # Secrets are mounted as environment variables at runtime.
       # Values are retrieved from Secret Manager — never stored in Terraform state.
-
       env {
         name = "JBK_SECRET_KEY"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.app_secret_key.secret_id
+            # Resolved from foundation/ via data source in main.tf.
+            secret  = data.google_secret_manager_secret.app_secret_key.secret_id
             version = "latest"
           }
         }
       }
 
-      # ── Health Checks ─────────────────────────────────────
+      # ── Health Checks ─────────────────────────────────
       # Startup probe: waits up to 30s for the container to boot.
       startup_probe {
         http_get {
@@ -131,9 +129,8 @@ resource "google_cloud_run_v2_service" "jbk_os" {
   }
 }
 
-# ── Public Access ────────────────────────────────────────────
+# ── Public Access ─────────────────────────────────────────────
 # Allows unauthenticated access to the Cloud Run service URL.
-# This can be restricted to specific service accounts in future.
 
 resource "google_cloud_run_v2_service_iam_member" "public_access" {
   project  = var.project_id

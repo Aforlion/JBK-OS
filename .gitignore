@@ -42,9 +42,13 @@ JBK-Data/cache/*
 workspace/
 
 # Terraform — operator files (contain billing IDs and project IDs)
-infra/terraform/terraform.tfvars
+# Each module has its own terraform.tfvars — both are gitignored.
+infra/terraform/foundation/terraform.tfvars
+infra/terraform/app/terraform.tfvars
+# .terraform/ cache directories are always ignored (provider binaries, etc.)
+infra/terraform/**/.terraform/
 infra/terraform/.terraform/
-# .terraform.lock.hcl is intentionally tracked to pin provider versions
+# .terraform.lock.hcl files are intentionally tracked per module (pin provider versions)
 infra/terraform/terraform.tfstate
 infra/terraform/terraform.tfstate.backup
 
