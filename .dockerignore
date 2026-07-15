@@ -1,0 +1,54 @@
+# ============================================================
+# .dockerignore — JBK-OS
+# Excludes non-runtime files from the container image.
+# Keep this file lean: a smaller image = faster Cold Start.
+# ============================================================
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# Python cache & bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Tests (not needed at runtime)
+tests/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Local environment files (never in image)
+.env
+.env.*
+!.env.example
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+
+# Infrastructure code (not part of the application)
+infra/
+
+# IDE settings
+.vscode/
+.idea/
+*.swp

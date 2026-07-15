@@ -1,0 +1,87 @@
+name: JBK-OS Production Deployment
+
+# ============================================================
+# Deploy workflow — triggers on version tags only.
+# Authentication: Workload Identity Federation (keyless).
+# No service account keys are stored in GitHub.
+#
+# Prerequisites (run once after terraform apply):
+#   1. Add GCP_PROJECT_ID to GitHub repository secrets.
+#   2. Add GCP_WORKLOAD_IDENTITY_PROVIDER to GitHub secrets
+#      (value from: terraform output workload_identity_provider)
+#   3. Add GCP_SERVICE_ACCOUNT to GitHub secrets
+#      (value from: terraform output github_actions_service_account)
+# ============================================================
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+env:
+  REGION: europe-west1
+  SERVICE_NAME: jbk-os
+  REGISTRY: europe-west1-docker.pkg.dev
+
+jobs:
+  deploy:
+    name: Build & Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # Required for Workload Identity Federation
+
+    steps:
+      # Step 1: Checkout
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Authenticate to GCP via Workload Identity Federation
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      # Step 3: Configure Docker to push to Artifact Registry
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGISTRY }} --quiet
+
+      # Step 4: Extract version tag
+      - name: Extract Version Tag
+        id: version
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      # Step 5: Build Container Image
+      - name: Build Container Image
+        run: |
+          docker build \
+            --tag ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/jbk-os-registry/${{ env.SERVICE_NAME }}:${{ steps.version.outputs.tag }} \
+            --tag ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/jbk-os-registry/${{ env.SERVICE_NAME }}:latest \
+            .
+
+      # Step 6: Push Image to Artifact Registry
+      - name: Push Container Image
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/jbk-os-registry/${{ env.SERVICE_NAME }}:${{ steps.version.outputs.tag }}
+          docker push ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/jbk-os-registry/${{ env.SERVICE_NAME }}:latest
+
+      # Step 7: Deploy to Cloud Run
+      - name: Deploy to Cloud Run
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region:  ${{ env.REGION }}
+          image:   ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/jbk-os-registry/${{ env.SERVICE_NAME }}:${{ steps.version.outputs.tag }}
+
+      # Step 8: Output Deployment URL
+      - name: Deployment Summary
+        run: |
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | ${{ steps.version.outputs.tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Service URL | ${{ steps.deploy.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Region | ${{ env.REGION }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deployed At | $(date -u '+%Y-%m-%dT%H:%M:%SZ') |" >> $GITHUB_STEP_SUMMARY
