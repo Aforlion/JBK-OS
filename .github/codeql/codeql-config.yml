@@ -1,0 +1,18 @@
+name: JBK-OS CodeQL Configuration
+
+disable-default-queries: false
+
+queries:
+  - uses: security-and-quality
+
+paths:
+  - core/
+  - web/
+  - portal/
+  - bootstrap.py
+  - main.py
+  - runtime.py
+
+paths-ignore:
+  - tests/
+  - docs/

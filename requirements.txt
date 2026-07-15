@@ -1,0 +1,2 @@
+fastapi==0.139.0
+websockets==16.1
