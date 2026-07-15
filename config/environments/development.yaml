@@ -1,11 +1,5 @@
 # Development Environment Configuration
 # JBK-OS — config/environments/development.yaml
-#
-# This file overrides the base runtime.yaml for local development.
-# Mirrors the DEVELOPMENT profile in core/deployment_manager.py.
-#
-# USAGE: Load this file in your local bootstrap when
-#        JBK_ENVIRONMENT=DEVELOPMENT is set.
 
 environment: DEVELOPMENT
 
@@ -16,9 +10,13 @@ runtime:
   security: relaxed
 
 ai:
-  provider: mock
-  # Gemini API key is not required in development.
-  # Use the mock AI provider for all local testing.
+  provider: gemini
+  model: gemini-2.5-flash
+  timeout_seconds: 15
+  max_retries: 2
+  backoff_factor: 1.5
+  temperature: 0.7
+  max_tokens: 2048
 
 web:
   port: 8080
@@ -26,7 +24,6 @@ web:
     - "http://localhost:3000"
     - "http://localhost:8080"
 
-# Secret references — development values sourced from .env (never committed)
-# In production these are injected by Secret Manager.
+# Sourced from local environment vars
 secrets:
-  source: env_file     # Reads from .env in development
+  source: env_file

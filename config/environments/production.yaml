@@ -1,12 +1,5 @@
 # Production Environment Configuration
 # JBK-OS — config/environments/production.yaml
-#
-# This file overrides the base runtime.yaml for production.
-# Mirrors the PRODUCTION profile in core/deployment_manager.py.
-#
-# SECURITY: No secrets are stored in this file.
-# All sensitive values are injected at runtime by Cloud Run
-# from Google Cloud Secret Manager.
 
 environment: PRODUCTION
 
@@ -17,23 +10,24 @@ runtime:
   security: strict
 
 ai:
-  provider: openai
-  # Gemini API key is injected by Cloud Run from Secret Manager:
-  # secret_id: gemini-api-key
+  provider: gemini
+  model: gemini-2.5-flash
+  timeout_seconds: 30
+  max_retries: 3
+  backoff_factor: 2.0
+  temperature: 0.7
+  max_tokens: 4096
 
 web:
-  port: 8080    # Cloud Run injects PORT env var — matches this value
+  port: 8080
   cors_origins:
-    # TODO: Replace with the actual Cloud Run URL after terraform apply.
-    # Example: "https://jbk-os-<hash>-ew.a.run.app"
     - "https://YOUR_CLOUD_RUN_URL"
 
-# Secret references — resolved at runtime by Cloud Run secret injection
-# These are paths, not values. Values never appear in config files.
+# Secret references
 secrets:
-  source: cloud_run_env    # Values injected by Secret Manager at container startup
+  source: cloud_run_env
   references:
-    app_secret_key: jbk-os-secret-key      # Secret Manager secret ID
-    gemini_api_key: gemini-api-key          # Reserved — populated when needed
-    database_url:   database-url            # Reserved — populated when needed
-    oauth_secret:   oauth-client-secret     # Reserved — populated when needed
+    app_secret_key: jbk-os-secret-key
+    gemini_api_key: gemini-api-key
+    database_url:   database-url
+    oauth_secret:   oauth-client-secret
