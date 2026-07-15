@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment configurations
+.env
+.env.*
+
+# IDE Settings
+.vscode/
+.idea/
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Testing / Type Checking Caches
+.pytest_cache/
+.mypy_cache/
+
+# Databases
+*.sqlite
+*.db
+
+# Runtime Data and Workspace
+# (Included to cover local runs or nested deployments)
+JBK-Data/logs/*
+!JBK-Data/logs/.gitkeep
+JBK-Data/cache/*
+!JBK-Data/cache/.gitkeep
+workspace/

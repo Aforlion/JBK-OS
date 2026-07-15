@@ -1,0 +1,6 @@
+default_execution_engine: Antigravity
+skill_discovery_directories:
+  - JBK-Skills
+skill_validation_rules:
+  require_skill_md: true
+  require_capabilities: true

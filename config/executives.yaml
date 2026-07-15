@@ -1,0 +1,9 @@
+executive_startup_settings:
+  load_permanents: true
+availability_defaults:
+  default_status: AVAILABLE
+notification_preferences:
+  email: false
+  console: true
+workspace_preferences:
+  auto_create_directories: true

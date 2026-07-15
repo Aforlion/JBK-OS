@@ -1,0 +1,268 @@
+Specification 036 — Client Delivery & Handover Engine
+
+Version: 1.0
+
+Status: Approved for Implementation
+
+Priority: Critical
+
+Architectural Layer: Client Success & Delivery
+
+Executive Summary
+
+The Client Delivery & Handover Engine manages the final stage of every client engagement.
+
+It transforms completed project deliverables into a structured client handover package, coordinates client acceptance, activates warranty and support, captures organizational knowledge, and formally closes the project.
+
+A project is not complete until the client has accepted the solution.
+
+Mission
+
+Ensure every client engagement ends consistently, professionally, and with complete organizational traceability.
+
+Business Requirements
+BR-036-001 Delivery Validation
+
+Before handover, the engine shall verify:
+
+All Work Orders are completed.
+All Deliverables are approved.
+No critical blockers remain.
+Required documentation exists.
+
+If validation fails, handover shall not begin.
+
+BR-036-002 Handover Package
+
+Generate a structured handover package containing:
+
+Executive Summary
+Delivered Features
+System Documentation
+User Documentation
+Administrator Guide
+Installation Instructions
+Configuration Information
+Training Materials
+Known Limitations
+Warranty Information
+Support Contact Information
+BR-036-003 Client Acceptance
+
+Track client acceptance states:
+
+Draft
+Ready for Delivery
+Delivered
+Under Review
+Accepted
+Accepted with Conditions
+Rejected
+Closed
+BR-036-004 Acceptance Conditions
+
+If the client accepts with conditions:
+
+record outstanding items
+create follow-up work
+maintain project status as partially closed
+BR-036-005 Training Management
+
+Support recording:
+
+training sessions
+attendees
+training materials
+completion status
+BR-036-006 Warranty Activation
+
+Upon acceptance:
+
+Automatically record:
+
+warranty start date
+warranty end date
+warranty scope
+exclusions
+BR-036-007 Support Activation
+
+Generate a Support Profile containing:
+
+support level
+SLA
+contact channels
+escalation path
+BR-036-008 Knowledge Capture
+
+Automatically submit project knowledge into the Knowledge Registry.
+
+Examples:
+
+lessons learned
+reusable templates
+architecture patterns
+implementation techniques
+risks encountered
+client industry insights
+BR-036-009 Asset Archiving
+
+Archive:
+
+proposals
+blueprints
+estimates
+approvals
+reports
+deliverables
+documentation
+BR-036-010 Executive Sign-Off
+
+Require CEO approval before final project closure.
+
+The engine shall never close projects autonomously.
+
+BR-036-011 Project Closure
+
+A project reaches CLOSED only when:
+
+client accepted
+documentation complete
+warranty activated
+support activated
+knowledge captured
+executive approved
+BR-036-012 Explainability
+
+Every closure report shall explain:
+
+what was delivered
+acceptance status
+remaining obligations
+activated services
+archived assets
+Domain Models
+
+Create:
+
+ClientHandoverPackage
+
+Contains
+
+documentation
+training
+warranty
+support
+deliverables
+limitations
+ClientAcceptance
+
+Tracks
+
+status
+reviewer
+comments
+conditions
+approval date
+ProjectClosureReport
+
+Contains
+
+closure summary
+acceptance result
+archived assets
+knowledge registered
+warranty activated
+support activated
+executive approval
+New Engine
+
+Create:
+
+client_delivery_handover_engine.py
+
+Main class:
+
+ClientDeliveryHandoverEngine
+
+Primary method:
+
+complete_project(
+    project,
+    deliverables,
+    approval,
+)
+
+Returns:
+
+ProjectClosureReport
+Architectural Responsibilities
+
+The engine SHALL
+
+validate completion
+package deliverables
+coordinate acceptance
+activate warranty
+activate support
+capture knowledge
+prepare closure
+
+The engine SHALL NOT
+
+execute project work
+modify work orders
+negotiate contracts
+create invoices
+auto-close projects
+Integration Points
+
+Uses:
+
+Project Registry
+Deliverables
+Knowledge Registry
+Chief of Staff
+CEO Approval Workflow
+Continuous Improvement Engine
+Organizational Learning Engine
+Tests
+
+At minimum:
+
+project cannot close with unfinished work
+acceptance workflow
+conditional acceptance
+rejection workflow
+warranty activation
+support activation
+knowledge registration
+archive creation
+executive approval requirement
+serialization
+full happy-path project closure
+Future Evolution (Version 2+)
+Digital client signatures.
+Automated deployment verification.
+Customer satisfaction (CSAT/NPS) surveys after handover.
+Client self-service portal for documentation and downloads.
+Automatic maintenance contract renewals.
+AI-generated training videos tailored to the delivered solution.
+Integration with helpdesk and ticketing platforms.
+Usage analytics to identify adoption issues and future upsell opportunities.
+Candidate Brain Entry
+
+Client-Delivery-Handover-Standards.md
+
+# Client Delivery & Handover Architectural Standards
+
+1. A project is not complete until the client formally accepts the delivered solution.
+
+2. Every project must produce a standardized handover package.
+
+3. Warranty and support begin only after client acceptance.
+
+4. Organizational knowledge must be captured before project closure.
+
+5. Executive approval is mandatory before final closure.
+
+6. Project archives must remain permanently traceable.

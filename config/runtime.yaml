@@ -1,0 +1,5 @@
+environment: production
+debug: false
+health_check_interval_seconds: 60
+briefing_schedule_cron: "0 8 * * *"
+cache_policy: memory
