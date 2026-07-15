@@ -44,7 +44,7 @@ workspace/
 # Terraform — operator files (contain billing IDs and project IDs)
 infra/terraform/terraform.tfvars
 infra/terraform/.terraform/
-infra/terraform/.terraform.lock.hcl
+# .terraform.lock.hcl is intentionally tracked to pin provider versions
 infra/terraform/terraform.tfstate
 infra/terraform/terraform.tfstate.backup
 
