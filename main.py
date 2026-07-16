@@ -26,8 +26,27 @@ def main() -> None:
         
         # Exit gracefully if not interactive (e.g. running in testing pipeline)
         if not sys.stdin.isatty():
-            print("\nNon-interactive mode detected. Kernel ready and exiting cleanly.")
-            sys.exit(0)
+            import os
+            if os.environ.get("JBK_ENVIRONMENT") == "PRODUCTION" or os.environ.get("PORT"):
+                import uvicorn
+                import logging
+                from web.app import create_app
+                from core.executive_console_controller import ExecutiveConsoleController
+                
+                logger = logging.getLogger("main")
+                port = int(os.environ.get("PORT", 8080))
+                logger.info(f"Starting production web server on port {port}...")
+                
+                controller = ExecutiveConsoleController(
+                    dashboard_engine=runtime.executive_briefing_engine,
+                    portfolio_engine=runtime.chief_of_staff,
+                )
+                app = create_app(controller)
+                uvicorn.run(app, host="0.0.0.0", port=port)
+                sys.exit(0)
+            else:
+                print("\nNon-interactive mode detected. Kernel ready and exiting cleanly.")
+                sys.exit(0)
             
         print("\nEnter command (type 'help' for commands, 'exit' to shutdown):")
         while True:
