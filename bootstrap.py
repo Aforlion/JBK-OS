@@ -166,13 +166,31 @@ def initialize_logging(config: dict[str, Any]) -> None:
     
     log_location = logging_config.get("log_location", "")
     if log_location:
-        os.makedirs(os.path.dirname(log_location), exist_ok=True)
+        # Normalize Windows paths in non-Windows environments
+        if os.name != 'nt':
+            log_location = log_location.replace('\\', '/')
+            if ':' in log_location:
+                # E.g. "c:/JBK/JBK-Data/..." -> "/app/JBK-Data/..."
+                parts = log_location.split(':', 1)[1].lstrip('/')
+                # Remove JBK prefix if present in the absolute path to resolve to app dir
+                if parts.lower().startswith('jbk/'):
+                    parts = parts[4:]
+                log_location = os.path.normpath(os.path.join('/app', parts))
+        
+        dir_name = os.path.dirname(log_location)
+        if dir_name:
+            os.makedirs(dir_name, exist_ok=True)
         
     handlers = []
     if logging_config.get("console_output", True):
         handlers.append(logging.StreamHandler())
     if logging_config.get("file_output", True) and log_location:
-        handlers.append(logging.FileHandler(log_location, encoding="utf-8"))
+        # Resolve to normalized path
+        try:
+            handlers.append(logging.FileHandler(log_location, encoding="utf-8"))
+        except Exception:
+            # Fallback if path is still not writable (e.g. system root)
+            pass
         
     logging.basicConfig(
         level=level,
