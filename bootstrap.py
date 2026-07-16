@@ -97,6 +97,10 @@ def parse_yaml(content: str) -> dict[str, Any]:
 
 
 def locate_jbk_root() -> str:
+    # If running in a Docker container (where code is under /app and JBK-OS has no parent sibling)
+    if os.environ.get("JBK_ENVIRONMENT") == "PRODUCTION" or os.path.exists("/app"):
+        return "/app"
+
     # Traverses upwards from current file to locate the JBK root (containing JBK-OS, JBK-Company, etc.)
     current = os.path.abspath(os.path.dirname(__file__))
     while current:
@@ -114,14 +118,18 @@ def locate_jbk_root() -> str:
 
 
 def load_config(jbk_root: str) -> dict[str, Any]:
+    # Check JBK-OS/config under jbk_root, fallback to config/ directly under jbk_root (for containers)
     config_dir = os.path.join(jbk_root, "JBK-OS", "config")
+    if not os.path.exists(config_dir):
+        config_dir = os.path.join(jbk_root, "config")
+        
     config = {}
     
     files = ["company.yaml", "paths.yaml", "runtime.yaml", "logging.yaml", "skills.yaml", "executives.yaml"]
     for f in files:
         fp = os.path.join(config_dir, f)
         if not os.path.exists(fp):
-            raise FileNotFoundError(f"Required configuration file missing: {f}")
+            raise FileNotFoundError(f"Required configuration file missing: {fp}")
         with open(fp, "r", encoding="utf-8") as file_obj:
             content = file_obj.read()
         config[os.path.splitext(f)[0]] = parse_yaml(content)
@@ -143,7 +151,8 @@ def validate_environment(jbk_root: str, config: dict[str, Any]) -> None:
     for d in required_dirs:
         full_path = os.path.join(jbk_root, d)
         if not os.path.exists(full_path):
-            raise DirectoryNotFoundError(f"Required directory missing: {full_path}")
+            # Self-healing: create the directory dynamically inside container/local runs
+            os.makedirs(full_path, exist_ok=True)
 
 
 class DirectoryNotFoundError(Exception):
