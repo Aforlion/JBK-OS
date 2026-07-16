@@ -15,7 +15,7 @@ variable "project_id" {
 variable "region" {
   description = "Primary GCP region. Must match the region used in foundation/."
   type        = string
-  default     = "europe-west1"
+  default     = "europe-west2"
 }
 
 # ── Application ──────────────────────────────────────────────

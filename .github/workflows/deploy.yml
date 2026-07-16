@@ -19,9 +19,9 @@ on:
       - 'v*.*.*'
 
 env:
-  REGION: europe-west1
+  REGION: europe-west2
   SERVICE_NAME: jbk-os
-  REGISTRY: europe-west1-docker.pkg.dev
+  REGISTRY: europe-west2-docker.pkg.dev
 
 jobs:
   deploy:
