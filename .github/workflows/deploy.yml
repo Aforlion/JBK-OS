@@ -74,6 +74,9 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region:  ${{ env.REGION }}
           image:   ${{ env.REGISTRY }}/${{ secrets.GCP_PROJECT_ID }}/jbk-os-registry/${{ env.SERVICE_NAME }}:${{ steps.version.outputs.tag }}
+          # Specify runtime SA explicitly — github-actions has iam.serviceAccountUser on jbk-os-runtime.
+          # Without this, gcloud defaults to the Compute Engine default SA which has no permission.
+          flags: "--service-account=jbk-os-runtime@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
 
       # Step 8: Output Deployment URL
       - name: Deployment Summary
