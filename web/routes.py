@@ -28,4 +28,32 @@ def get_web_routes(controller: Any) -> APIRouter:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
+    @router.get("/api/verify-gemini")
+    def verify_gemini_integration() -> dict[str, Any]:
+        """Runs a live verification request against the real Gemini API via the adapter."""
+        from core.ai_provider import GeminiAdapter, AICapability
+        from core.ai_gateway import AIRequest
+        
+        adapter = GeminiAdapter()
+        request = AIRequest(
+            capability=AICapability.CHAT,
+            prompt="Reply in exactly one word: VERIFIED",
+            system_context="You are a validation bot.",
+            temperature=0.0,
+            max_tokens=100
+        )
+        try:
+            res = adapter.generate(request)
+            # Remove any raw prompt contents from response metadata to ensure no leakage
+            return {
+                "success": res.get("success", False),
+                "model": res.get("model", "none"),
+                "latency_ms": res.get("latency_ms", 0),
+                "token_usage": res.get("token_usage", {}),
+                "verified": "VERIFIED" in (res.get("content") or "").upper()
+            }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Gemini API verification failed: {e}")
+
+
     return router
