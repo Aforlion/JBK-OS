@@ -78,10 +78,7 @@ resource "google_cloud_run_v2_service" "jbk_os" {
         value = "INFO"
       }
 
-      env {
-        name  = "PORT"
-        value = tostring(var.container_port)
-      }
+
 
       # ── Secret References ─────────────────────────────
       # Secrets are mounted as environment variables at runtime.
@@ -96,6 +93,17 @@ resource "google_cloud_run_v2_service" "jbk_os" {
           }
         }
       }
+
+      env {
+        name = "GEMINI_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = data.google_secret_manager_secret.gemini_api_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
 
       # ── Health Checks ─────────────────────────────────
       # Startup probe: waits up to 30s for the container to boot.

@@ -51,3 +51,9 @@ data "google_secret_manager_secret" "app_secret_key" {
   secret_id = "jbk-os-secret-key"
   project   = var.project_id
 }
+
+data "google_secret_manager_secret" "gemini_api_key" {
+  secret_id = "gemini-api-key"
+  project   = var.project_id
+}
+

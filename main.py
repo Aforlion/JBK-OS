@@ -37,9 +37,16 @@ def main() -> None:
                 port = int(os.environ.get("PORT", 8080))
                 logger.info(f"Starting production web server on port {port}...")
                 
+                from core.ai_executive_assistant import AIExecutiveAssistant
+                ai_assistant = AIExecutiveAssistant(
+                    chief_of_staff=runtime.chief_of_staff,
+                    skill_registry=runtime.skill_registry,
+                    knowledge_registry=runtime.knowledge_registry,
+                )
                 controller = ExecutiveConsoleController(
                     dashboard_engine=runtime.executive_briefing_engine,
                     portfolio_engine=runtime.chief_of_staff,
+                    ai_assistant=ai_assistant,
                 )
                 app = create_app(controller)
                 uvicorn.run(app, host="0.0.0.0", port=port)
