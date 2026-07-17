@@ -47,6 +47,7 @@ def main() -> None:
                     dashboard_engine=runtime.executive_briefing_engine,
                     portfolio_engine=runtime.chief_of_staff,
                     ai_assistant=ai_assistant,
+                    monitoring_engine=runtime.monitoring_engine,
                 )
                 app = create_app(controller)
                 uvicorn.run(app, host="0.0.0.0", port=port)

@@ -69,11 +69,12 @@ class AIGateway:
     and standardized responses.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, monitoring_engine: Any = None) -> None:
         self._providers: dict[str, AIProvider] = {}
         self._adapters: dict[str, AIProviderAdapter] = {}
         self._usage_records: list[AIUsageRecord] = []
         self._usage_counter = 1
+        self.monitoring_engine = monitoring_engine
 
     # ------------------------------------------------------------------
     # Provider Management (BR-037-002)
@@ -184,6 +185,14 @@ class AIGateway:
 
                 # Record usage (BR-037-008)
                 self._record_usage(request, response)
+                if self.monitoring_engine:
+                    self.monitoring_engine.record_metric(
+                        engine_name="AIGateway",
+                        execution_time_ms=float(response.latency_ms),
+                        ai_tokens=response.token_usage.get("input", 0) + response.token_usage.get("output", 0),
+                        ai_cost=response.estimated_cost,
+                        success=True
+                    )
                 return response
 
             except Exception as exc:
@@ -211,6 +220,12 @@ class AIGateway:
             fallback_history=fallback_history,
         )
         self._record_usage(request, failure_response)
+        if self.monitoring_engine:
+            self.monitoring_engine.record_metric(
+                engine_name="AIGateway",
+                execution_time_ms=0.0,
+                success=False
+            )
         return failure_response
 
     # ------------------------------------------------------------------
@@ -219,6 +234,33 @@ class AIGateway:
 
     def get_usage_records(self) -> list[AIUsageRecord]:
         return list(self._usage_records)
+
+    def get_usage_summary(self) -> dict[str, Any]:
+        """Summarize AI usage telemetry (total calls, tokens, cost, latency, success)."""
+        records = self.get_usage_records()
+        if not records:
+            return {
+                "total_calls": 0,
+                "total_tokens": 0,
+                "total_cost": 0.0,
+                "average_latency": 0.0,
+                "success_rate": 100.0,
+            }
+        
+        total_calls = len(records)
+        total_tokens = sum(r.token_usage.get("input", 0) + r.token_usage.get("output", 0) for r in records)
+        total_cost = sum(r.estimated_cost for r in records)
+        average_latency = sum(r.latency_ms for r in records) / total_calls
+        successes = sum(1 for r in records if r.success)
+        success_rate = (successes / total_calls) * 100.0
+        
+        return {
+            "total_calls": total_calls,
+            "total_tokens": total_tokens,
+            "total_cost": round(total_cost, 4),
+            "average_latency": round(average_latency, 1),
+            "success_rate": round(success_rate, 1),
+        }
 
     # ------------------------------------------------------------------
     # Internal Helpers

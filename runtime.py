@@ -19,6 +19,7 @@ class Runtime:
         executive_console: Any,
         workspace_path: str,
         logging_config: dict[str, Any],
+        monitoring_engine: Any = None,
     ) -> None:
         self.config = config
         self.company = company
@@ -33,6 +34,7 @@ class Runtime:
         self.executive_console = executive_console
         self.workspace_path = workspace_path
         self.logging_config = logging_config
+        self.monitoring_engine = monitoring_engine
         self.status = "READY"
 
     def to_dict(self) -> dict[str, Any]:

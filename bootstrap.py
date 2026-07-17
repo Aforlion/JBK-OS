@@ -17,6 +17,7 @@ from core.executive_console import ExecutiveConsole
 from core.executive import Executive, ExecutiveStatus
 from core.knowledge import KnowledgeItem, KnowledgeStatus
 from core.skill import Skill, SkillStatus
+from core.monitoring_engine import MonitoringEngine
 from runtime import Runtime
 
 LOGGER = logging.getLogger(__name__)
@@ -339,6 +340,7 @@ def bootstrap() -> Runtime:
         project_registry = ProjectRegistry()
         skill_registry = SkillRegistry()
         knowledge_registry = KnowledgeRegistry()
+        monitoring_engine = MonitoringEngine()
         
         # Load assets
         load_company_assets(jbk_root, worker_registry)
@@ -368,6 +370,7 @@ def bootstrap() -> Runtime:
             executive_console=executive_console,
             workspace_path=workspace_path,
             logging_config=config.get("logging", {}),
+            monitoring_engine=monitoring_engine,
         )
         
         LOGGER.info("JBK OS Kernel successfully booted and READY.")

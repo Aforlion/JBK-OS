@@ -25,6 +25,25 @@ def create_app(controller: Any) -> FastAPI:
         allow_headers=["*"],
     )
 
+    import time
+    from fastapi import Request
+
+    @app.middleware("http")
+    async def track_metrics_middleware(request: Request, call_next):
+        start_time = time.perf_counter()
+        response = await call_next(request)
+        
+        path = request.url.path
+        if path not in ("/health", "/ws", "/favicon.ico") and not path.startswith("/static"):
+            duration_ms = (time.perf_counter() - start_time) * 1000.0
+            if hasattr(controller, "monitoring_engine") and controller.monitoring_engine:
+                controller.monitoring_engine.record_metric(
+                    engine_name="WebServer",
+                    execution_time_ms=duration_ms,
+                    success=(response.status_code < 500)
+                )
+        return response
+
     ws_manager = WebSocketManager()
 
     # Mount routes

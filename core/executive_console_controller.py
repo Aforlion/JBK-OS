@@ -34,6 +34,7 @@ class ExecutiveConsoleController:
         strategic_engine: Any = None,
         meeting_engine: Any = None,
         communication_engine: Any = None,
+        monitoring_engine: Any = None,
     ) -> None:
         self.dashboard_engine = dashboard_engine
         self.portfolio_engine = portfolio_engine
@@ -43,6 +44,7 @@ class ExecutiveConsoleController:
         self.strategic_engine = strategic_engine
         self.meeting_engine = meeting_engine
         self.communication_engine = communication_engine
+        self.monitoring_engine = monitoring_engine
 
     def load_dashboard(self) -> DashboardViewModel:
         """Loads and formats the dashboard view model, supporting graceful degradation."""
