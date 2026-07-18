@@ -180,7 +180,15 @@ def initialize_logging(config: dict[str, Any]) -> None:
         
         dir_name = os.path.dirname(log_location)
         if dir_name:
-            os.makedirs(dir_name, exist_ok=True)
+            try:
+                os.makedirs(dir_name, exist_ok=True)
+            except (PermissionError, OSError):
+                # Fallback to local logs directory if root-level is not writable (e.g. in GitHub CI)
+                log_location = os.path.normpath(os.path.join(os.getcwd(), 'logs', os.path.basename(log_location)))
+                try:
+                    os.makedirs(os.path.dirname(log_location), exist_ok=True)
+                except Exception:
+                    log_location = ""
         
     handlers = []
     if logging_config.get("console_output", True):
