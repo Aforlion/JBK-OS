@@ -9,9 +9,6 @@ paths:
   - core/
   - web/
   - portal/
-  - bootstrap.py
-  - main.py
-  - runtime.py
 
 paths-ignore:
   - tests/
