@@ -1,5 +1,6 @@
 import unittest
 from datetime import datetime, timezone
+from typing import Any
 
 from core.executive_kpi import ExecutiveKPI
 from core.dashboard_alert import DashboardAlert
