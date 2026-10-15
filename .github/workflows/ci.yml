@@ -57,7 +57,7 @@ jobs:
       # Step 7: Archive Build and Test Logs
       - name: Archive Test Logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-logs-python-${{ matrix.python-version }}
           path: test_results.log
